@@ -8,15 +8,20 @@ import type { AnalysisResult, MatchScoreBreakdown, InterviewQuestion } from "@/t
 
 // Calls Claude with a specific model — defaults to Sonnet
 async function callClaude(prompt: string, model: string = SONNET_MODEL): Promise<string> {
-  const response = await anthropic.messages.create({
-    model,
-    max_tokens: 4096,
-    messages: [{ role: "user", content: prompt }],
-  });
+  try {
+    const response = await anthropic.messages.create({
+      model,
+      max_tokens: 4096,
+      messages: [{ role: "user", content: prompt }],
+    });
 
-  const block = response.content[0];
-  if (block.type !== "text") throw new Error("Unexpected response type from Claude");
-  return block.text;
+    const block = response.content[0];
+    if (block.type !== "text") throw new Error("Unexpected response type from Claude");
+    return block.text;
+  } catch (err) {
+    console.error(`[callClaude] model="${model}" failed:`, err instanceof Error ? err.message : err);
+    throw err;
+  }
 }
 
 // Parse JSON from Claude response — strips markdown code fences if present
