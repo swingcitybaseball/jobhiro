@@ -25,5 +25,5 @@ REQUIREMENTS:
 
 CRITICAL: This letter must feel like it was written specifically for this company and this role. Any hiring manager should feel like this candidate really understands their needs. Generic cover letters are ignored.
 
-Format in clean Markdown. Start directly with the letter — no intro or explanation.`;
+CRITICAL FORMATTING RULE: Do NOT include any header, title, contact information, name, address, email, phone number, or markdown formatting at the top of the cover letter. No "# Cover Letter" heading. No "---" dividers. No contact block. Start your response with the first sentence of the opening paragraph — nothing before it. The candidate's contact info will be added separately by the system. Your output is ONLY the letter body and sign-off.`;
 }

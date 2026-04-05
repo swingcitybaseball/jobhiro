@@ -68,6 +68,16 @@ function addRule(doc: jsPDF, y: number): number {
   return y + 3;
 }
 
+// Strips markdown formatting symbols from a string, leaving plain text
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")  // bold
+    .replace(/\*(.+?)\*/g, "$1")       // italic
+    .replace(/`(.+?)`/g, "$1")         // inline code
+    .replace(/\*\*/g, "")              // leftover bold markers
+    .replace(/\*/g, "");               // leftover italic markers
+}
+
 // Parses a markdown line and renders it with appropriate formatting.
 // Returns the new Y cursor position.
 function renderLine(doc: jsPDF, line: string, y: number): number {
@@ -78,9 +88,14 @@ function renderLine(doc: jsPDF, line: string, y: number): number {
     return y + 2;
   }
 
+  // Skip markdown table rows (pipes) and horizontal rules — can't render in PDF
+  if (/^\|/.test(trimmed) || /^[-|]+$/.test(trimmed)) {
+    return y;
+  }
+
   // H1: # Name / Title  (used for candidate name at top of resume)
   if (/^# /.test(trimmed)) {
-    const text = trimmed.replace(/^# /, "").replace(/\*\*/g, "");
+    const text = stripMarkdown(trimmed.replace(/^# /, ""));
     doc.setFont("helvetica", "bold");
     doc.setFontSize(SIZE_NAME);
     y = addWrappedText(doc, text, MARGIN, y, CONTENT_W, LH_H1 + 2);
@@ -89,7 +104,7 @@ function renderLine(doc: jsPDF, line: string, y: number): number {
 
   // H2: ## Section Header (e.g. "Experience", "Skills")
   if (/^## /.test(trimmed)) {
-    const text = trimmed.replace(/^## /, "").replace(/\*\*/g, "").toUpperCase();
+    const text = stripMarkdown(trimmed.replace(/^## /, "")).toUpperCase();
     y += SPACE_AFTER_SECTION;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(SIZE_H1);
@@ -100,29 +115,30 @@ function renderLine(doc: jsPDF, line: string, y: number): number {
 
   // H3: ### Subsection (e.g. job title + company)
   if (/^### /.test(trimmed)) {
-    const text = trimmed.replace(/^### /, "").replace(/\*\*/g, "");
+    const text = stripMarkdown(trimmed.replace(/^### /, ""));
     doc.setFont("helvetica", "bold");
     doc.setFontSize(SIZE_H2);
     y = addWrappedText(doc, text, MARGIN, y, CONTENT_W, LH_H2);
     return y + 1;
   }
 
-  // Bullet point: - item
+  // Bullet point: - item or * item
   if (/^[-*] /.test(trimmed)) {
-    const text = trimmed.replace(/^[-*] /, "").replace(/\*\*/g, "").replace(/\*/g, "");
+    const text = stripMarkdown(trimmed.replace(/^[-*] /, ""));
     doc.setFont("helvetica", "normal");
     doc.setFontSize(SIZE_BODY);
-    // Indent bullet slightly, wrap with narrower width for the hang
+    // bulletWidth must account for the indented X position so splitTextToSize
+    // wraps before the right margin, not beyond it
     const bulletX = MARGIN + 4;
-    const bulletWidth = CONTENT_W - 4;
+    const bulletWidth = CONTENT_W - 4;  // matches the 4mm indent at bulletX
     doc.text("•", MARGIN + 1, y);
     y = addWrappedText(doc, text, bulletX, y, bulletWidth, LH_BODY);
     return y;
   }
 
-  // Bold line (standalone **text** used for job date ranges etc.)
+  // Bold-only line (standalone **text** — used for job date ranges etc.)
   if (/^\*\*.+\*\*$/.test(trimmed)) {
-    const text = trimmed.replace(/\*\*/g, "");
+    const text = stripMarkdown(trimmed);
     doc.setFont("helvetica", "bolditalic");
     doc.setFontSize(SIZE_SMALL);
     y = addWrappedText(doc, text, MARGIN, y, CONTENT_W, LH_SMALL);
@@ -130,7 +146,7 @@ function renderLine(doc: jsPDF, line: string, y: number): number {
   }
 
   // Regular paragraph — strip any remaining markdown emphasis
-  const text = trimmed.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1");
+  const text = stripMarkdown(trimmed);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(SIZE_BODY);
   y = addWrappedText(doc, text, MARGIN, y, CONTENT_W, LH_BODY);
