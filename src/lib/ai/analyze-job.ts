@@ -25,7 +25,16 @@ function parseJSON<T>(text: string): T {
   return JSON.parse(cleaned) as T;
 }
 
-// Main orchestrator — runs all 5 analyses in parallel for speed
+// Extracts job title and company name from raw job posting text
+function buildJobMetaPrompt(jobText: string): string {
+  return `Extract the job title and company name from this job posting. If the company name is not mentioned, use "Unknown Company". Respond with ONLY valid JSON — no markdown, no extra text:
+{"title": "<job title>", "company": "<company name>"}
+
+JOB POSTING:
+${jobText.slice(0, 3000)}`;
+}
+
+// Main orchestrator — runs all 6 calls in parallel for speed
 export async function analyzeJob(
   jobText: string,
   resumeText: string,
@@ -34,28 +43,26 @@ export async function analyzeJob(
   const id = crypto.randomUUID();
 
   // Run all AI calls concurrently to minimize total wait time
-  const [matchScoreRaw, tailoredResume, coverLetter, interviewPrepRaw, companyIntel] =
+  const [matchScoreRaw, tailoredResume, coverLetter, interviewPrepRaw, companyIntel, jobMetaRaw] =
     await Promise.all([
       callClaude(buildMatchScorePrompt(jobText, resumeText)),
       callClaude(buildTailorResumePrompt(jobText, resumeText)),
       callClaude(buildCoverLetterPrompt(jobText, resumeText)),
       callClaude(buildInterviewPrepPrompt(jobText, resumeText)),
       callClaude(buildCompanyIntelPrompt(jobText, resumeText)),
+      callClaude(buildJobMetaPrompt(jobText)),
     ]);
 
   // Parse structured JSON outputs
   const matchScore = parseJSON<MatchScoreBreakdown>(matchScoreRaw);
   const interviewPrepData = parseJSON<{ questions: InterviewQuestion[] }>(interviewPrepRaw);
-
-  // Extract basic job metadata from the text (title + company are best-effort)
-  const titleMatch = jobText.match(/(?:position|role|title|job)[:]\s*(.+)/i);
-  const companyMatch = jobText.match(/(?:company|at|employer)[:]\s*(.+)/i);
+  const jobMeta = parseJSON<{ title: string; company: string }>(jobMetaRaw);
 
   return {
     id,
     jobData: {
-      title: titleMatch?.[1]?.trim() ?? "Position",
-      company: companyMatch?.[1]?.trim() ?? "Company",
+      title: jobMeta.title || "Unknown Position",
+      company: jobMeta.company || "Unknown Company",
       description: jobText,
       rawText: jobText,
     },
