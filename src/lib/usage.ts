@@ -38,11 +38,24 @@ export async function getUserSubscription(
   return data as { plan: SubscriptionPlan; status: string } | null;
 }
 
-// How many analyses an authenticated user has saved.
+// How many analyses an authenticated user has saved (all time — used for free tier gate).
 export async function getAuthenticatedAnalysisCount(userId: string): Promise<number> {
   const { count } = await supabase
     .from("analyses")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
+  return count ?? 0;
+}
+
+// How many analyses a user has run in the current calendar month.
+// Used to enforce the Pro plan's 30/month limit.
+export async function getMonthlyAnalysisCount(userId: string): Promise<number> {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const { count } = await supabase
+    .from("analyses")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", monthStart);
   return count ?? 0;
 }

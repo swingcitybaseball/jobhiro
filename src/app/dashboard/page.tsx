@@ -3,7 +3,7 @@ import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabase } from "@/lib/db/supabase";
-import { getUserSubscription } from "@/lib/usage";
+import { getUserSubscription, getMonthlyAnalysisCount } from "@/lib/usage";
 import { ManageSubscriptionButton } from "@/components/manage-subscription-button";
 import { SubscriptionVerifier } from "@/components/subscription-verifier";
 
@@ -39,8 +39,8 @@ export default async function DashboardPage({
   const params = await searchParams;
   const justSubscribed = params.checkout === "success";
 
-  // Load analyses and subscription in parallel
-  const [analysesResult, subscription] = await Promise.all([
+  // Load analyses, subscription, and monthly count in parallel
+  const [analysesResult, subscription, monthlyCount] = await Promise.all([
     supabase
       .from("analyses")
       .select("id, job_title, job_company, created_at, result_json")
@@ -48,6 +48,7 @@ export default async function DashboardPage({
       .order("created_at", { ascending: false })
       .limit(50),
     getUserSubscription(userId),
+    getMonthlyAnalysisCount(userId),
   ]);
 
   console.log("[dashboard] userId:", userId);
@@ -108,6 +109,20 @@ export default async function DashboardPage({
               <p className="text-sm text-gray-500 mt-1">
                 You have {(analyses?.length ?? 0) >= 1 ? "0" : "1"} free analysis remaining.
               </p>
+            )}
+            {plan === "pro" && (
+              <p className="text-sm text-gray-500 mt-1">
+                {monthlyCount} of 30 analyses used this month
+                {monthlyCount >= 25 && monthlyCount < 30 && (
+                  <span className="ml-1 text-amber-600 font-medium">— running low</span>
+                )}
+                {monthlyCount >= 30 && (
+                  <span className="ml-1 text-red-600 font-medium">— limit reached</span>
+                )}
+              </p>
+            )}
+            {plan === "premium" && (
+              <p className="text-sm text-gray-500 mt-1">Unlimited analyses</p>
             )}
           </div>
           <div className="flex items-center gap-3">

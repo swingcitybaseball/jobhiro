@@ -27,7 +27,7 @@ const tiers = [
     period: "/month",
     description: "For active job seekers running multiple applications.",
     features: [
-      "Unlimited analyses",
+      "30 analyses per month",
       "Everything in Free",
       "PDF downloads",
       "Saved analysis history",
@@ -44,6 +44,7 @@ const tiers = [
     period: "/month",
     description: "For career coaches and serious candidates.",
     features: [
+      "Unlimited analyses",
       "Everything in Pro",
       "AI mock interview chat",
       "Bulk analysis (up to 10 jobs)",

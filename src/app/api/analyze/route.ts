@@ -5,6 +5,7 @@ import { supabase } from "@/lib/db/supabase";
 import {
   getUserSubscription,
   getAuthenticatedAnalysisCount,
+  getMonthlyAnalysisCount,
 } from "@/lib/usage";
 import type { AnalyzeRequest } from "@/types";
 
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
       console.log(`${TAG} plan: ${plan}, isPaid: ${isPaid}`);
 
       if (!isPaid) {
-        // Free authenticated users get 1 analysis total
+        // Free authenticated users get 1 analysis total (all time)
         const count = await getAuthenticatedAnalysisCount(userId);
         console.log(`${TAG} free user analysis count: ${count}`);
         if (count >= 1) {
@@ -65,7 +66,23 @@ export async function POST(req: NextRequest) {
           );
         }
         showUpgradePrompt = true;
+      } else if (plan === "pro") {
+        // Pro users: 30 analyses per calendar month
+        const monthlyCount = await getMonthlyAnalysisCount(userId);
+        console.log(`${TAG} pro user monthly count: ${monthlyCount}`);
+        if (monthlyCount >= 30) {
+          return NextResponse.json(
+            {
+              error: "You've reached your 30 analyses this month. Upgrade to Premium for unlimited access.",
+              code: "MONTHLY_LIMIT_REACHED",
+            },
+            { status: 429 }
+          );
+        }
+        // Warn when approaching limit
+        if (monthlyCount >= 25) showUpgradePrompt = true;
       }
+      // Premium: no limit check needed
     }
 
     // ── Step 3: Run analysis ──────────────────────────────────────────────
