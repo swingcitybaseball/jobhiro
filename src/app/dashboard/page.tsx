@@ -40,7 +40,7 @@ export default async function DashboardPage({
   const justSubscribed = params.checkout === "success";
 
   // Load analyses and subscription in parallel
-  const [{ data: analyses }, subscription] = await Promise.all([
+  const [analysesResult, subscription] = await Promise.all([
     supabase
       .from("analyses")
       .select("id, job_title, job_company, created_at, result_json")
@@ -49,6 +49,14 @@ export default async function DashboardPage({
       .limit(50),
     getUserSubscription(userId),
   ]);
+
+  console.log("[dashboard] userId:", userId);
+  console.log("[dashboard] analyses count:", analysesResult.data?.length ?? 0);
+  if (analysesResult.error) {
+    console.error("[dashboard] Supabase query error:", analysesResult.error.message, analysesResult.error.details);
+  }
+
+  const analyses = analysesResult.data;
 
   const plan = subscription?.plan ?? "free";
   const isPaid = (plan === "pro" || plan === "premium") && subscription?.status === "active";
@@ -120,14 +128,67 @@ export default async function DashboardPage({
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Analysis History
-            {analyses?.length ? (
+            {isPaid && analyses?.length ? (
               <span className="ml-2 text-sm font-normal text-gray-400">
                 ({analyses.length})
               </span>
             ) : null}
           </h2>
 
-          {!analyses?.length ? (
+          {/* Free users: upgrade prompt */}
+          {!isPaid && (
+            <div className="bg-white border border-gray-200 rounded-xl p-8 text-center space-y-3">
+              <p className="text-gray-900 font-semibold">Save and revisit every analysis</p>
+              <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                Pro and Premium plans save your full analysis history — resume, cover letter, interview prep, and company intel — so you can come back any time.
+              </p>
+              {analyses?.length ? (
+                <p className="text-xs text-gray-400">
+                  Your 1 free analysis is saved below. Upgrade to save all future ones.
+                </p>
+              ) : null}
+              <Link
+                href="/pricing"
+                className="inline-block mt-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                Upgrade to Pro →
+              </Link>
+            </div>
+          )}
+
+          {/* Free users: show their 1 saved analysis below the upgrade prompt */}
+          {!isPaid && analyses?.length ? (
+            <div className="mt-4 space-y-3">
+              {(analyses as AnalysisRow[]).map((a) => (
+                <Link
+                  key={a.id}
+                  href={`/results/${a.id}`}
+                  className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-400 hover:shadow-sm transition-all"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">
+                        {a.job_title || "Untitled Position"}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {a.job_company || "Unknown Company"} · {formatDate(a.created_at)}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 text-sm font-bold px-3 py-1 rounded-full ${scoreColor(
+                        a.result_json.matchScore.overall
+                      )}`}
+                    >
+                      {a.result_json.matchScore.overall}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Paid users: full history or empty state */}
+          {isPaid && !analyses?.length && (
             <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
               <p className="text-gray-500 mb-4">No analyses yet.</p>
               <Link
@@ -137,7 +198,9 @@ export default async function DashboardPage({
                 Run Your First Analysis
               </Link>
             </div>
-          ) : (
+          )}
+
+          {isPaid && analyses?.length ? (
             <div className="space-y-3">
               {(analyses as AnalysisRow[]).map((a) => (
                 <Link
@@ -165,7 +228,7 @@ export default async function DashboardPage({
                 </Link>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </main>

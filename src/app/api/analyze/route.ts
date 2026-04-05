@@ -10,6 +10,7 @@ import type { AnalyzeRequest } from "@/types";
 
 // Cookie name used to track anonymous usage
 const USAGE_COOKIE = "jp_usage";
+const TAG = "[analyze]";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,6 +26,7 @@ export async function POST(req: NextRequest) {
 
     // ── Step 1: Identify caller ───────────────────────────────────────────
     const { userId } = await auth();
+    console.log(`${TAG} userId:`, userId ?? "anonymous");
     let showUpgradePrompt = false;
 
     // ── Step 2: Enforce free tier gate BEFORE running AI ─────────────────
@@ -47,10 +49,12 @@ export async function POST(req: NextRequest) {
       const sub = await getUserSubscription(userId);
       const plan = sub?.plan ?? "free";
       const isPaid = (plan === "pro" || plan === "premium") && sub?.status === "active";
+      console.log(`${TAG} plan: ${plan}, isPaid: ${isPaid}`);
 
       if (!isPaid) {
         // Free authenticated users get 1 analysis total
         const count = await getAuthenticatedAnalysisCount(userId);
+        console.log(`${TAG} free user analysis count: ${count}`);
         if (count >= 1) {
           return NextResponse.json(
             {
@@ -66,26 +70,38 @@ export async function POST(req: NextRequest) {
 
     // ── Step 3: Run analysis ──────────────────────────────────────────────
     const result = await analyzeJob(jobText, resumeText, jobUrl);
+    console.log(`${TAG} analysis complete, result.id: ${result.id}`);
 
-    // ── Step 4: Record usage AFTER success ────────────────────────────────
+    // ── Step 4: Save to Supabase (awaited — fire-and-forget loses the insert in serverless) ──
     if (userId) {
-      // Save full result to Supabase for dashboard history
-      supabase
+      const insertPayload = {
+        id: result.id,
+        user_id: userId,
+        job_title: result.jobData?.title ?? null,
+        job_company: result.jobData?.company ?? null,
+        job_url: jobUrl ?? null,
+        result_json: result,
+      };
+      console.log(`${TAG} inserting to Supabase analyses:`, {
+        id: insertPayload.id,
+        user_id: insertPayload.user_id,
+        job_title: insertPayload.job_title,
+        job_company: insertPayload.job_company,
+      });
+
+      const { error: insertError } = await supabase
         .from("analyses")
-        .insert({
-          id: result.id,
-          user_id: userId,
-          job_title: result.jobData.title,
-          job_company: result.jobData.company,
-          job_url: jobUrl ?? null,
-          result_json: result,
-        })
-        .then(({ error }) => {
-          if (error) console.error("Failed to save analysis:", error.message);
-        });
+        .insert(insertPayload);
+
+      if (insertError) {
+        // Log but don't fail the request — user still gets their results
+        console.error(`${TAG} Supabase insert FAILED:`, insertError.message, insertError.details, insertError.hint);
+      } else {
+        console.log(`${TAG} Supabase insert succeeded`);
+      }
     }
 
-    // Build response — set usage cookie for anonymous users so the gate holds on refresh
+    // ── Step 5: Build response — set usage cookie for anonymous users ─────
     const response = NextResponse.json({ ...result, showUpgradePrompt });
 
     if (!userId) {
@@ -99,7 +115,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (err) {
-    console.error("Analysis error:", err);
+    console.error(`${TAG} Analysis error:`, err);
     return NextResponse.json({ error: "Analysis failed. Please try again." }, { status: 500 });
   }
 }
