@@ -16,15 +16,27 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!sub?.stripe_customer_id) {
-    return NextResponse.json({ error: "No active subscription found" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No subscription found. Please subscribe first.", redirect: "/pricing" },
+      { status: 400 }
+    );
   }
 
   const origin = req.headers.get("origin") ?? "http://localhost:3000";
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: sub.stripe_customer_id,
-    return_url: `${origin}/dashboard`,
-  });
-
-  return NextResponse.json({ url: session.url });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: sub.stripe_customer_id,
+      return_url: `${origin}/dashboard`,
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    // Stripe throws if the customer ID was deleted from the Stripe dashboard
+    const message = err instanceof Error ? err.message : "Unknown Stripe error";
+    console.error("[portal] Stripe error:", message);
+    return NextResponse.json(
+      { error: "No subscription found. Please subscribe first.", redirect: "/pricing" },
+      { status: 400 }
+    );
+  }
 }
