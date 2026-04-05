@@ -12,8 +12,11 @@ export default async function HomePage() {
       {/* Nav */}
       <nav className="border-b border-gray-100 px-6 py-4">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <span className="text-lg font-bold text-gray-900">JobPilot</span>
+          <span className="text-lg font-bold text-gray-900">JobHiro</span>
           <div className="flex items-center gap-3">
+            <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900">
+              Blog
+            </Link>
             <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-900">
               Pricing
             </Link>

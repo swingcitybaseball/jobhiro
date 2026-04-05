@@ -1,4 +1,4 @@
--- JobPilot Supabase Schema
+-- JobHiro Supabase Schema
 -- Run this entire file in the Supabase SQL editor (Dashboard → SQL Editor → New Query)
 
 -- ────────────────────────────────────────────────────────────

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JobPilot — AI Job Application Tool",
+  title: "JobHiro — AI Job Application Tool",
   description: "Paste a job posting and your resume. Get a tailored resume, cover letter, interview prep, and company intel in 60 seconds.",
 };
 

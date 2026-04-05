@@ -1,4 +1,4 @@
-// Core data models for JobPilot
+// Core data models for JobHiro
 
 export interface JobData {
   title: string;

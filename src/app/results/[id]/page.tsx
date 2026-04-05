@@ -86,7 +86,7 @@ export default function ResultsPage() {
             New Analysis
           </button>
           <span className="text-gray-300">|</span>
-          <span className="text-lg font-bold text-gray-900">JobPilot</span>
+          <span className="text-lg font-bold text-gray-900">JobHiro</span>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-sm text-gray-500 hidden sm:block">{result.jobData.title}</span>
             {isSignedIn ? (
