@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 import { CheckoutButton } from "@/components/checkout-button";
 
 const tiers = [
@@ -17,7 +18,7 @@ const tiers = [
       "Company intel brief",
     ],
     cta: "Start Free",
-    ctaHref: "/",
+    ctaHref: "/#analysis",
     priceId: null,
     highlight: false,
   },
@@ -59,56 +60,70 @@ const tiers = [
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-white">
-      <nav className="border-b border-gray-100 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-lg font-bold text-gray-900">JobHiro</Link>
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">← Back</Link>
-        </div>
-      </nav>
+    <main className="min-h-screen" style={{ backgroundColor: "#faf9f6", color: "#303330" }}>
+      <SiteNav />
 
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-12 space-y-3">
-          <h1 className="text-4xl font-bold text-gray-900">Simple pricing</h1>
-          <p className="text-lg text-gray-500">
-            One free analysis, then Pro for unlimited. No hidden fees.
+      <div className="max-w-5xl mx-auto px-6 pt-36 pb-20">
+        <div className="text-center mb-16 space-y-3">
+          <h1
+            className="text-5xl font-bold text-on-surface"
+            style={{ fontFamily: "var(--font-noto-serif), Georgia, serif" }}
+          >
+            Invest in your career
+          </h1>
+          <p className="text-lg text-on-surface-variant">
+            One interview callback pays for the tool a hundred times over.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {tiers.map((tier) => (
             <div
               key={tier.name}
-              className={`rounded-2xl p-8 border flex flex-col ${
-                tier.highlight
-                  ? "border-gray-900 bg-gray-900 text-white"
-                  : "border-gray-200 bg-white"
-              }`}
+              className="flex flex-col p-10"
+              style={{
+                borderRadius: "1.5rem",
+                background: tier.highlight ? "#ffffff" : "#f4f4f0",
+                boxShadow: tier.highlight
+                  ? "0px 24px 48px rgba(48, 51, 48, 0.12)"
+                  : "none",
+                outline: tier.highlight ? "2px solid #a43e24" : "none",
+                transform: tier.highlight ? "scale(1.03)" : "none",
+                position: "relative",
+                overflow: "hidden",
+                zIndex: tier.highlight ? 10 : 1,
+              }}
             >
+              {tier.highlight && (
+                <div
+                  className="absolute top-0 right-0 bg-primary text-on-primary px-4 py-1 text-xs font-bold"
+                  style={{ borderBottomLeftRadius: "0.75rem" }}
+                >
+                  POPULAR
+                </div>
+              )}
+
               <div className="mb-6">
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className={`text-3xl font-bold ${tier.highlight ? "text-white" : "text-gray-900"}`}>
+                  <span
+                    className="text-4xl font-bold text-on-surface"
+                    style={{ fontFamily: "var(--font-noto-serif), Georgia, serif" }}
+                  >
                     {tier.price}
                   </span>
                   {tier.period && (
-                    <span className={`text-sm ${tier.highlight ? "text-gray-400" : "text-gray-500"}`}>
-                      {tier.period}
-                    </span>
+                    <span className="text-sm text-on-surface-variant">{tier.period}</span>
                   )}
                 </div>
-                <p className={`text-xl font-semibold ${tier.highlight ? "text-white" : "text-gray-900"}`}>
-                  {tier.name}
-                </p>
-                <p className={`text-sm mt-1 ${tier.highlight ? "text-gray-400" : "text-gray-500"}`}>
-                  {tier.description}
-                </p>
+                <p className="text-xl font-bold text-on-surface">{tier.name}</p>
+                <p className="text-sm mt-1 text-on-surface-variant">{tier.description}</p>
               </div>
 
-              <ul className="space-y-2 flex-1 mb-8">
+              <ul className="space-y-3 flex-1 mb-8">
                 {tier.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <span className={tier.highlight ? "text-green-400" : "text-emerald-600"}>✓</span>
-                    <span className={tier.highlight ? "text-gray-300" : "text-gray-700"}>{f}</span>
+                  <li key={f} className="flex items-start gap-2 text-sm text-on-surface-variant">
+                    <span className="material-symbols-outlined text-primary" style={{ fontSize: "18px" }}>check</span>
+                    {f}
                   </li>
                 ))}
               </ul>
@@ -122,11 +137,8 @@ export default function PricingPage() {
               ) : (
                 <Link
                   href={tier.ctaHref!}
-                  className={`block text-center py-3 rounded-xl font-semibold text-sm transition-colors ${
-                    tier.highlight
-                      ? "bg-white text-gray-900 hover:bg-gray-100"
-                      : "bg-gray-900 text-white hover:bg-gray-800"
-                  }`}
+                  className="block text-center py-3 font-bold text-sm text-on-surface hover:bg-surface-container-highest transition-colors"
+                  style={{ borderRadius: "9999px", border: "2px solid #b1b2af" }}
                 >
                   {tier.cta}
                 </Link>
@@ -135,7 +147,7 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <p className="text-center text-sm text-gray-400 mt-8">
+        <p className="text-center text-sm text-on-surface-variant mt-10">
           All plans billed monthly. Cancel anytime. Payments processed securely by Stripe.
         </p>
       </div>

@@ -8,23 +8,26 @@ interface Props {
 }
 
 // Client component for auth-sensitive nav items.
-// The parent Server Component passes isSignedIn so we avoid a client-side flash.
+// The parent Server Component passes isSignedIn to avoid a client-side flash.
 export function NavAuth({ isSignedIn }: Props) {
   if (isSignedIn) {
     return (
-      <>
-        <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900">
-          Dashboard
-        </Link>
+      <div className="flex items-center gap-3">
         <UserButton />
-      </>
+      </div>
     );
   }
 
   return (
     <SignInButton mode="modal">
-      <button className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50">
-        Sign in
+      <button
+        className="px-6 py-2 font-semibold text-on-primary text-sm hover:scale-95 transition-transform duration-200"
+        style={{
+          borderRadius: "9999px",
+          background: "linear-gradient(135deg, #a43e24, #ffac98)",
+        }}
+      >
+        Join
       </button>
     </SignInButton>
   );

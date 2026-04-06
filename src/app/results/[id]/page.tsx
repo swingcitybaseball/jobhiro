@@ -51,12 +51,13 @@ export default function ResultsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#faf9f6" }}>
         <div className="text-center space-y-4">
-          <p className="text-gray-600">{error}</p>
+          <p style={{ color: "#5d605c" }}>{error}</p>
           <button
             onClick={() => router.push("/")}
-            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800"
+            className="px-6 py-2.5 text-sm font-semibold text-on-primary hover:scale-95 transition-transform"
+            style={{ borderRadius: "9999px", background: "linear-gradient(135deg, #a43e24, #ffac98)" }}
           >
             Start New Analysis
           </button>
@@ -67,37 +68,62 @@ export default function ResultsPage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-gray-400" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#faf9f6" }}>
+        <Loader2 size={32} className="animate-spin" style={{ color: "#b1b2af" }} />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white pb-20">
-      {/* Nav */}
-      <nav className="border-b border-gray-100 px-6 py-4 sticky top-0 bg-white z-10">
+    <main className="min-h-screen pb-20" style={{ backgroundColor: "#faf9f6", color: "#303330" }}>
+      {/* Nav — glassmorphism sticky bar matching the site-wide style */}
+      <nav
+        className="sticky top-0 z-50 px-6 py-3"
+        style={{
+          background: "rgba(250, 249, 246, 0.88)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          boxShadow: "0 1px 0 rgba(177,178,175,0.35)",
+        }}
+      >
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary"
+            style={{ color: "#5d605c" }}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={15} />
             New Analysis
           </button>
-          <span className="text-gray-300">|</span>
-          <span className="text-lg font-bold text-gray-900">JobHiro</span>
+          <span style={{ color: "#b1b2af" }}>|</span>
+          <span
+            className="text-xl font-bold"
+            style={{ fontFamily: "var(--font-noto-serif), Georgia, serif", color: "#303330" }}
+          >
+            JobHiro
+          </span>
           <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:block">{result.jobData.title}</span>
+            <span className="text-sm hidden sm:block" style={{ color: "#5d605c" }}>
+              {result.jobData.title}
+            </span>
             {isSignedIn ? (
               <>
-                <a href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900">Dashboard</a>
+                <a
+                  href="/dashboard"
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                  style={{ color: "#5d605c" }}
+                >
+                  Dashboard
+                </a>
                 <UserButton />
               </>
             ) : (
               <SignInButton mode="modal">
-                <button className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  Sign in
+                <button
+                  className="text-sm px-5 py-1.5 font-semibold text-on-primary hover:scale-95 transition-transform"
+                  style={{ borderRadius: "9999px", background: "linear-gradient(135deg, #a43e24, #ffac98)" }}
+                >
+                  Join
                 </button>
               </SignInButton>
             )}
@@ -105,15 +131,35 @@ export default function ResultsPage() {
         </div>
       </nav>
 
-      {/* Match score headline */}
-      <div className="border-b border-gray-100 bg-gray-50 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-gray-900">{result.matchScore.overall}</span>
-            <span className="text-gray-400 text-sm">/ 100 match</span>
-          </div>
-          <span className="text-gray-300">—</span>
-          <p className="text-sm text-gray-600 flex-1 line-clamp-1">{result.matchScore.summary}</p>
+      {/* Match score headline bar */}
+      <div
+        className="px-6 py-4"
+        style={{ backgroundColor: "#f4f4f0" }}
+      >
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <span
+            className="text-3xl font-bold"
+            style={{
+              fontFamily: "var(--font-noto-serif), Georgia, serif",
+              color: result.matchScore.overall >= 70 ? "#44683b" : result.matchScore.overall >= 55 ? "#5d605c" : "#aa371c",
+            }}
+          >
+            {result.matchScore.overall}
+          </span>
+          <span className="text-sm" style={{ color: "#797b78" }}>/ 100</span>
+          <span
+            className="text-sm font-semibold px-3 py-1"
+            style={{
+              borderRadius: "9999px",
+              backgroundColor: result.matchScore.overall >= 70 ? "#d0fac0" : result.matchScore.overall >= 55 ? "#e1e3df" : "#ffac98",
+              color: result.matchScore.overall >= 70 ? "#2c4e24" : result.matchScore.overall >= 55 ? "#5d605c" : "#751c05",
+            }}
+          >
+            {result.matchScore.overall >= 85 ? "Excellent Match" : result.matchScore.overall >= 70 ? "Good Match" : result.matchScore.overall >= 55 ? "Fair Match" : "Low Match"}
+          </span>
+          <span className="text-sm flex-1 line-clamp-1 hidden sm:block" style={{ color: "#5d605c" }}>
+            — {result.matchScore.summary}
+          </span>
         </div>
       </div>
 

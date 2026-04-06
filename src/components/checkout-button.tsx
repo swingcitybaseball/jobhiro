@@ -26,7 +26,6 @@ export function CheckoutButton({ priceId, highlight, label }: Props) {
       const data = await res.json();
 
       if (!res.ok) {
-        // Not signed in — send them to sign up first, then back to pricing
         if (res.status === 401) {
           router.push("/sign-up?redirect=/pricing");
           return;
@@ -35,7 +34,6 @@ export function CheckoutButton({ priceId, highlight, label }: Props) {
         return;
       }
 
-      // Redirect to Stripe Checkout
       window.location.href = data.url;
     } finally {
       setLoading(false);
@@ -46,11 +44,21 @@ export function CheckoutButton({ priceId, highlight, label }: Props) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`w-full py-3 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60 ${
+      className="w-full py-3 font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 hover:scale-95 transition-transform"
+      style={
         highlight
-          ? "bg-white text-gray-900 hover:bg-gray-100"
-          : "bg-gray-900 text-white hover:bg-gray-800"
-      }`}
+          ? {
+              borderRadius: "9999px",
+              background: "linear-gradient(135deg, #a43e24, #ffac98)",
+              color: "#fff7f6",
+            }
+          : {
+              borderRadius: "9999px",
+              border: "2px solid #b1b2af",
+              background: "transparent",
+              color: "#303330",
+            }
+      }
     >
       {loading ? <Loader2 size={14} className="animate-spin" /> : null}
       {label}

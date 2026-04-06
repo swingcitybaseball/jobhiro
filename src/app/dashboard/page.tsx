@@ -16,10 +16,10 @@ interface AnalysisRow {
 }
 
 function scoreColor(n: number) {
-  if (n >= 85) return "text-emerald-600 bg-emerald-50";
-  if (n >= 70) return "text-blue-600 bg-blue-50";
-  if (n >= 55) return "text-amber-600 bg-amber-50";
-  return "text-red-600 bg-red-50";
+  if (n >= 85) return { bg: "#d0fac0", color: "#3e6135" };
+  if (n >= 70) return { bg: "#e8e8e4", color: "#303330" };
+  if (n >= 55) return { bg: "#fcc3ce", color: "#643c45" };
+  return { bg: "#fa7150", color: "#671200" };
 }
 
 function formatDate(iso: string) {
@@ -39,7 +39,6 @@ export default async function DashboardPage({
   const params = await searchParams;
   const justSubscribed = params.checkout === "success";
 
-  // Load analyses, subscription, and monthly count in parallel
   const [analysesResult, subscription, monthlyCount] = await Promise.all([
     supabase
       .from("analyses")
@@ -58,26 +57,31 @@ export default async function DashboardPage({
   }
 
   const analyses = analysesResult.data;
-
   const plan = subscription?.plan ?? "free";
   const isPaid = (plan === "pro" || plan === "premium") && subscription?.status === "active";
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Silently syncs Stripe → Supabase if webhook hasn't fired yet */}
+    <main className="min-h-screen" style={{ backgroundColor: "#faf9f6", color: "#303330" }}>
       <SubscriptionVerifier />
+
       {/* Nav */}
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-10">
+      <nav
+        className="sticky top-0 z-10 px-6 py-4"
+        style={{ backgroundColor: "rgba(250,249,246,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(177,178,175,0.3)" }}
+      >
         <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Link href="/" className="text-lg font-bold text-gray-900">JobHiro</Link>
-          <span className="text-gray-300">|</span>
-          <span className="text-sm text-gray-500 font-medium">Dashboard</span>
+          <Link
+            href="/"
+            className="text-xl font-bold text-on-surface"
+            style={{ fontFamily: "var(--font-noto-serif), Georgia, serif" }}
+          >
+            JobHiro
+          </Link>
+          <span style={{ color: "#b1b2af" }}>|</span>
+          <span className="text-sm text-on-surface-variant font-medium">Dashboard</span>
           <div className="ml-auto flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-            >
+            <Link href="/" className="text-sm text-on-surface-variant hover:text-on-surface transition-colors">
               New Analysis
             </Link>
             <UserButton />
@@ -86,50 +90,65 @@ export default async function DashboardPage({
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-        {/* Success banner after checkout */}
+        {/* Success banner */}
         {justSubscribed && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-800 font-medium">
-            🎉 You&apos;re now on {planLabel}! Enjoy unlimited analyses.
+          <div
+            className="p-4 text-sm font-medium"
+            style={{ backgroundColor: "#d0fac0", color: "#2c4e24", borderRadius: "1rem" }}
+          >
+            You&apos;re now on {planLabel}! Enjoy unlimited analyses.
           </div>
         )}
 
         {/* Plan status card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-center justify-between gap-4">
+        <div
+          className="bg-surface-container-lowest p-6 flex items-center justify-between gap-4"
+          style={{ borderRadius: "1.5rem", boxShadow: "0px 4px 16px rgba(48, 51, 48, 0.05)" }}
+        >
           <div>
-            <p className="text-sm text-gray-500">Current plan</p>
+            <p className="text-sm text-on-surface-variant">Current plan</p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xl font-bold text-gray-900">{planLabel}</span>
+              <span
+                className="text-2xl font-bold text-on-surface"
+                style={{ fontFamily: "var(--font-noto-serif), Georgia, serif" }}
+              >
+                {planLabel}
+              </span>
               {isPaid && (
-                <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-medium">
+                <span
+                  className="text-xs px-2 py-0.5 font-medium"
+                  style={{ backgroundColor: "#d0fac0", color: "#2c4e24", borderRadius: "9999px" }}
+                >
                   Active
                 </span>
               )}
             </div>
             {!isPaid && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-on-surface-variant mt-1">
                 You have {(analyses?.length ?? 0) >= 1 ? "0" : "1"} free analysis remaining.
               </p>
             )}
             {plan === "pro" && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-on-surface-variant mt-1">
                 {monthlyCount} of 30 analyses used this month
                 {monthlyCount >= 25 && monthlyCount < 30 && (
-                  <span className="ml-1 text-amber-600 font-medium">— running low</span>
+                  <span className="ml-1 font-medium" style={{ color: "#943219" }}> — running low</span>
                 )}
                 {monthlyCount >= 30 && (
-                  <span className="ml-1 text-red-600 font-medium">— limit reached</span>
+                  <span className="ml-1 font-medium text-error"> — limit reached</span>
                 )}
               </p>
             )}
             {plan === "premium" && (
-              <p className="text-sm text-gray-500 mt-1">Unlimited analyses</p>
+              <p className="text-sm text-on-surface-variant mt-1">Unlimited analyses</p>
             )}
           </div>
           <div className="flex items-center gap-3">
             {!isPaid ? (
               <Link
                 href="/pricing"
-                className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                className="px-5 py-2.5 text-on-primary text-sm font-semibold transition-all hover:scale-95"
+                style={{ borderRadius: "9999px", background: "linear-gradient(135deg, #a43e24, #ffac98)" }}
               >
                 Upgrade to Pro →
               </Link>
@@ -141,111 +160,111 @@ export default async function DashboardPage({
 
         {/* Analyses list */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2
+            className="text-xl font-bold text-on-surface mb-4"
+            style={{ fontFamily: "var(--font-noto-serif), Georgia, serif" }}
+          >
             Analysis History
             {isPaid && analyses?.length ? (
-              <span className="ml-2 text-sm font-normal text-gray-400">
-                ({analyses.length})
-              </span>
+              <span className="ml-2 text-sm font-normal text-on-surface-variant">({analyses.length})</span>
             ) : null}
           </h2>
 
           {/* Free users: upgrade prompt */}
           {!isPaid && (
-            <div className="bg-white border border-gray-200 rounded-xl p-8 text-center space-y-3">
-              <p className="text-gray-900 font-semibold">Save and revisit every analysis</p>
-              <p className="text-sm text-gray-500 max-w-sm mx-auto">
+            <div
+              className="bg-surface-container-lowest p-8 text-center space-y-3"
+              style={{ borderRadius: "1.5rem", boxShadow: "0px 4px 16px rgba(48, 51, 48, 0.05)" }}
+            >
+              <p
+                className="font-bold text-on-surface"
+                style={{ fontFamily: "var(--font-noto-serif), Georgia, serif" }}
+              >
+                Save and revisit every analysis
+              </p>
+              <p className="text-sm text-on-surface-variant max-w-sm mx-auto">
                 Pro and Premium plans save your full analysis history — resume, cover letter, interview prep, and company intel — so you can come back any time.
               </p>
               {analyses?.length ? (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-on-surface-variant">
                   Your 1 free analysis is saved below. Upgrade to save all future ones.
                 </p>
               ) : null}
               <Link
                 href="/pricing"
-                className="inline-block mt-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                className="inline-block mt-2 px-5 py-2.5 text-on-primary text-sm font-semibold hover:scale-95 transition-transform"
+                style={{ borderRadius: "9999px", background: "linear-gradient(135deg, #a43e24, #ffac98)" }}
               >
                 Upgrade to Pro →
               </Link>
             </div>
           )}
 
-          {/* Free users: show their 1 saved analysis below the upgrade prompt */}
+          {/* Free user saved analysis */}
           {!isPaid && analyses?.length ? (
             <div className="mt-4 space-y-3">
               {(analyses as AnalysisRow[]).map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/results/${a.id}`}
-                  className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-400 hover:shadow-sm transition-all"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">
-                        {a.job_title || "Untitled Position"}
-                      </p>
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {a.job_company || "Unknown Company"} · {formatDate(a.created_at)}
-                      </p>
-                    </div>
-                    <span
-                      className={`shrink-0 text-sm font-bold px-3 py-1 rounded-full ${scoreColor(
-                        a.result_json.matchScore.overall
-                      )}`}
-                    >
-                      {a.result_json.matchScore.overall}
-                    </span>
-                  </div>
-                </Link>
+                <AnalysisCard key={a.id} a={a} />
               ))}
             </div>
           ) : null}
 
-          {/* Paid users: full history or empty state */}
+          {/* Paid: empty state */}
           {isPaid && !analyses?.length && (
-            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-              <p className="text-gray-500 mb-4">No analyses yet.</p>
+            <div
+              className="bg-surface-container-lowest p-12 text-center"
+              style={{ borderRadius: "1.5rem", boxShadow: "0px 4px 16px rgba(48, 51, 48, 0.05)" }}
+            >
+              <p className="text-on-surface-variant mb-4">No analyses yet.</p>
               <Link
                 href="/"
-                className="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                className="px-5 py-2.5 text-on-primary text-sm font-semibold hover:scale-95 transition-transform"
+                style={{ borderRadius: "9999px", background: "linear-gradient(135deg, #a43e24, #ffac98)" }}
               >
                 Run Your First Analysis
               </Link>
             </div>
           )}
 
+          {/* Paid: analysis list */}
           {isPaid && analyses?.length ? (
             <div className="space-y-3">
               {(analyses as AnalysisRow[]).map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/results/${a.id}`}
-                  className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-400 hover:shadow-sm transition-all"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">
-                        {a.job_title || "Untitled Position"}
-                      </p>
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {a.job_company || "Unknown Company"} · {formatDate(a.created_at)}
-                      </p>
-                    </div>
-                    <span
-                      className={`shrink-0 text-sm font-bold px-3 py-1 rounded-full ${scoreColor(
-                        a.result_json.matchScore.overall
-                      )}`}
-                    >
-                      {a.result_json.matchScore.overall}
-                    </span>
-                  </div>
-                </Link>
+                <AnalysisCard key={a.id} a={a} />
               ))}
             </div>
           ) : null}
         </div>
       </div>
     </main>
+  );
+}
+
+function AnalysisCard({ a }: { a: AnalysisRow }) {
+  const score = a.result_json.matchScore.overall;
+  const { bg, color } = scoreColor(score);
+  return (
+    <Link
+      href={`/results/${a.id}`}
+      className="block bg-surface-container-lowest p-5 hover:shadow-md transition-all"
+      style={{ borderRadius: "1rem", boxShadow: "0px 2px 8px rgba(48, 51, 48, 0.04)" }}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-on-surface truncate">
+            {a.job_title || "Untitled Position"}
+          </p>
+          <p className="text-sm text-on-surface-variant mt-0.5">
+            {a.job_company || "Unknown Company"} · {formatDate(a.created_at)}
+          </p>
+        </div>
+        <span
+          className="shrink-0 text-sm font-bold px-3 py-1"
+          style={{ backgroundColor: bg, color, borderRadius: "9999px" }}
+        >
+          {score}%
+        </span>
+      </div>
+    </Link>
   );
 }
