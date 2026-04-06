@@ -48,6 +48,7 @@ const PRICING = {
 
 // Keyword seed list — add more here and re-run
 const DEFAULT_KEYWORDS = [
+  // ── Original 15 ────────────────────────────────────────────────────────────
   "software engineer resume tips",
   "data analyst resume tips",
   "nurse resume tips",
@@ -63,6 +64,45 @@ const DEFAULT_KEYWORDS = [
   "best resume format 2026",
   "how to tailor resume to job description",
   "AI resume builder vs manual resume",
+  // ── Resume Tips ─────────────────────────────────────────────────────────────
+  "accountant resume tips",
+  "graphic designer resume tips",
+  "sales representative resume tips",
+  "human resources manager resume tips",
+  "customer service resume tips",
+  "product manager resume tips",
+  "mechanical engineer resume tips",
+  "financial analyst resume tips",
+  // ── Cover Letter Examples ────────────────────────────────────────────────────
+  "registered nurse cover letter example",
+  "project manager cover letter example",
+  "marketing manager cover letter example",
+  "teacher cover letter example",
+  "accountant cover letter example",
+  "graphic designer cover letter example",
+  "sales representative cover letter example",
+  // ── Interview Prep ───────────────────────────────────────────────────────────
+  "how to prepare for project manager interview",
+  "how to prepare for marketing interview",
+  "how to prepare for teacher interview",
+  "how to prepare for sales interview",
+  "how to prepare for customer service interview",
+  "how to prepare for accounting interview",
+  "how to prepare for HR interview",
+  // ── Career Advice ────────────────────────────────────────────────────────────
+  "how to write a resume with no experience",
+  "resume gaps how to explain",
+  "how to write a career change resume",
+  "best cover letter format 2026",
+  "how long should a resume be",
+  "resume vs CV difference",
+  "how to follow up after job application",
+  "what to wear to a job interview",
+  "how to negotiate salary after job offer",
+  "behavioral interview questions and answers",
+  "STAR method interview examples",
+  "remote job resume tips",
+  "entry level resume tips no experience",
 ];
 
 // ---------------------------------------------------------------------------
