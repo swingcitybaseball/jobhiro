@@ -95,7 +95,14 @@ export async function POST(req: NextRequest) {
 
         const { error } = await supabase
           .from("user_subscriptions")
-          .update({ plan, status, updated_at: new Date().toISOString() })
+          .update({
+            plan,
+            status,
+            // Clear the subscription ID when the sub is canceled via this event
+            // (mirrors the behavior in subscription.deleted)
+            ...(status === "canceled" ? { stripe_subscription_id: null } : {}),
+            updated_at: new Date().toISOString(),
+          })
           .eq("stripe_customer_id", customerId);
 
         if (error) console.error("[webhook] subscription.updated failed:", error.message);

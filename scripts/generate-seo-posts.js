@@ -37,7 +37,7 @@ if (fs.existsSync(envPath)) {
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const SITE_URL = "https://jobhiro.vercel.app";
+const SITE_URL = "https://jobhiro.ai";
 const BLOG_DIR = path.join(__dirname, "..", "content", "blog");
 
 // Approximate token costs (USD per 1M tokens) as of 2026-04
@@ -370,9 +370,10 @@ async function processKeyword(keyword) {
   } catch (err) {
     log("error", `Failed for "${keyword}": ${err.message}`);
     if (err.status === 429) {
-      console.log(
-        "   Rate limited — waiting 60s before continuing..."
-      );
+      console.log("   Rate limited (429) — waiting 60s before continuing...");
+      await sleep(60_000);
+    } else if (err.status === 529) {
+      console.log("   API overloaded (529) — waiting 60s before continuing...");
       await sleep(60_000);
     }
   }
